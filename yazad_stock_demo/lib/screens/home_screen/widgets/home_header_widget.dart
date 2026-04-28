@@ -176,7 +176,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
             ),
           ],
         ),
-      ),
+      
     );
   }
 }
