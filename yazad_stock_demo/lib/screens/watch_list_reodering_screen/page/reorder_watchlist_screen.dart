@@ -48,41 +48,56 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Select Watchlist'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: otherTabs.map((tab) {
-                  return RadioListTile<String>(
-                    title: Text(tab),
-                    value: tab,
-                    groupValue: selectedTab,
-                    onChanged: (value) {
-                      if (value != null) {
-                        setDialogState(() => selectedTab = value);
+            return Theme(
+              data: Theme.of(context),
+              child: AlertDialog(
+                title: const Text('Select Watchlist'),
+                backgroundColor: Colors.white,
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 5,
+                  mainAxisAlignment: .start,
+                  crossAxisAlignment: .start,
+                  children: otherTabs.map((tab) {
+                    return RadioListTile<String>(
+                      title: Text(tab),
+                      value: tab,
+                      activeColor: Colors.black,
+                      hoverColor: Colors.grey,
+                      groupValue: selectedTab,
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedTab = value);
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancel',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      if (selectedTab != widget.tabName) {
+                        context.pushReplacementNamed(
+                          'reorder',
+                          pathParameters: {'tabName': selectedTab},
+                        );
                       }
                     },
-                  );
-                }).toList(),
+                    child: Text(
+                      'OK',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    if (selectedTab != widget.tabName) {
-                      context.pushReplacementNamed(
-                        'reorder',
-                        pathParameters: {'tabName': selectedTab},
-                      );
-                    }
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
             );
           },
         );
@@ -97,9 +112,8 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -113,7 +127,10 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -125,11 +142,15 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
                             isDense: true,
                             border: UnderlineInputBorder(),
                           ),
-                          onSubmitted: (_) => setState(() => _isEditingName = false),
+                          onSubmitted: (_) =>
+                              setState(() => _isEditingName = false),
                         )
                       : Text(
                           _nameController.text,
-                          style: const TextStyle(fontSize: 16, color: Colors.black),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
                         ),
                 ),
                 IconButton(
@@ -147,10 +168,8 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
           Expanded(
             child: ReorderableListView.builder(
               buildDefaultDragHandles: false,
-              proxyDecorator: (child, index, animation) => DraggingDecorator(
-                animation: animation,
-                child: child,
-              ),
+              proxyDecorator: (child, index, animation) =>
+                  DraggingDecorator(animation: animation, child: child),
               onReorder: (oldIndex, newIndex) {
                 setState(() {
                   if (oldIndex < newIndex) {
@@ -183,13 +202,15 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
               children: [
                 OutlinedButton(
                   onPressed: _showOtherWatchlistsDialog,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    side: const BorderSide(color: Colors.grey),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                  style:
+                      OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        side: const BorderSide(color: Colors.grey),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        overlayColor: Colors.black26,
+                      ),
                   child: const Text(
                     'Edit other watchlists',
                     style: TextStyle(color: Colors.black),
@@ -199,12 +220,12 @@ class _WatchlistReorderScreenState extends State<WatchlistReorderScreen> {
                 ElevatedButton(
                   onPressed: () {
                     context.read<HomeScreenBloc>().add(
-                          WatchlistOrderSaved(
-                            tab: widget.tabName,
-                            items: _localItems!,
-                            newName: _nameController.text,
-                          ),
-                        );
+                      WatchlistOrderSaved(
+                        tab: widget.tabName,
+                        items: _localItems!,
+                        newName: _nameController.text,
+                      ),
+                    );
                     context.pop();
                   },
                   style: ElevatedButton.styleFrom(

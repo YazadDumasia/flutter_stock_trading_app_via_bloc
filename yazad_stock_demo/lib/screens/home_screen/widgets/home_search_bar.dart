@@ -14,11 +14,18 @@ class HomeSearchBar extends StatelessWidget {
         builder: (context, state) {
           return TextField(
             onChanged: (value) {
-              context.read<HomeScreenBloc>().add(HomeScreenSearchChanged(value));
+              context.read<HomeScreenBloc>().add(
+                HomeScreenSearchChanged(value),
+              );
             },
             decoration: InputDecoration(
               hintText: 'Search for instruments',
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: Icon(
+                Icons.search,
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Colors.black
+                    : Colors.white,
+              ),
               filled: true,
               fillColor: Theme.of(context).cardColor,
               border: OutlineInputBorder(

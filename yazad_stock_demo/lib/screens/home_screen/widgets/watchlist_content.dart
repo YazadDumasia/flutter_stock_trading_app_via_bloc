@@ -51,8 +51,12 @@ class WatchlistContent extends StatelessWidget {
                 TabBar(
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
-                  indicatorColor: Colors.black,
-                  labelColor: Colors.black,
+                  indicatorColor:  Theme.of(context).brightness == Brightness.light
+                      ? Colors.black
+                      : Colors.white,
+                  labelColor:  Theme.of(context).brightness == Brightness.light
+                      ? Colors.black
+                      : Colors.white,
                   unselectedLabelColor: Colors.grey,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   tabs: tabs.map((tab) => Tab(text: tab)).toList(),
@@ -115,10 +119,6 @@ class WatchlistContent extends StatelessWidget {
                                           'reorder',
                                           pathParameters: {'tabName': tab},
                                         );
-                                        // The view will refresh automatically because the Bloc state 
-                                        // was updated during reordering, but you can explicitly 
-                                        // trigger a refresh event if needed:
-                                        // context.read<HomeScreenBloc>().add(HomeScreenRequested());
                                       },
                                     ),
                                   ],
