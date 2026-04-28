@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:yazad_stock_demo/screens/home_screen/widgets/sort_slider_icon_icons.dart';
 import '../../../bloc/home_screen_bloc.dart';
+import '../../../models/watcher_model/watcher_model.dart';
 import 'watchlist_item.dart';
 
 class WatchlistContent extends StatelessWidget {
@@ -11,6 +12,13 @@ class WatchlistContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeScreenBloc, HomeScreenState>(
+      buildWhen: (previous, current) {
+        // Only rebuild if the data or selected tab actually changed
+        if (previous is HomeLoadedState && current is HomeLoadedState) {
+          return previous.data != current.data || previous.selectedTab != current.selectedTab;
+        }
+        return true;
+      },
       builder: (context, state) {
         if (state is HomeLoadingState || state is HomeInitialState) {
           return const Center(child: CircularProgressIndicator());
@@ -40,21 +48,22 @@ class WatchlistContent extends StatelessWidget {
             return const Center(child: Text('No watchlist available'));
           }
 
+          final initialIndex = tabs.indexOf(state.selectedTab).clamp(0, tabs.length - 1);
+
           return DefaultTabController(
+            key: ValueKey(tabs.join(',')), // Recreate controller only if tabs change
             length: tabs.length,
-            initialIndex: tabs
-                .indexOf(state.selectedTab)
-                .clamp(0, tabs.length - 1),
+            initialIndex: initialIndex,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TabBar(
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
-                  indicatorColor:  Theme.of(context).brightness == Brightness.light
+                  indicatorColor: Theme.of(context).brightness == Brightness.light
                       ? Colors.black
                       : Colors.white,
-                  labelColor:  Theme.of(context).brightness == Brightness.light
+                  labelColor: Theme.of(context).brightness == Brightness.light
                       ? Colors.black
                       : Colors.white,
                   unselectedLabelColor: Colors.grey,
@@ -62,83 +71,17 @@ class WatchlistContent extends StatelessWidget {
                   tabs: tabs.map((tab) => Tab(text: tab)).toList(),
                   onTap: (index) {
                     context.read<HomeScreenBloc>().add(
-                      HomeScreenTabChanged(tabs[index]),
-                    );
+                          HomeScreenTabChanged(tabs[index]),
+                        );
                   },
                 ),
                 Expanded(
                   child: TabBarView(
                     physics: const NeverScrollableScrollPhysics(),
-                    // Managed by bloc sync
                     children: tabs.map((tab) {
-                      final items = state.data[tab] ?? [];
-                      if (items.isEmpty) {
-                        return const Center(child: Text('No stocks found'));
-                      }
-                      return RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<HomeScreenBloc>().add(
-                            HomeScreenRequested(),
-                          );
-                        },
-                        child: SingleChildScrollView(
-                          primary: true,
-                          physics: const ClampingScrollPhysics(),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(10.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ElevatedButton.icon(
-                                      icon: const Icon(
-                                        SortSliderIcon.settings_sliders,
-                                        color: Colors.black,
-                                      ),
-                                      label: const Text(
-                                        'Sort by',
-                                        style: TextStyle(color: Colors.black),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.grey.shade300,
-                                        foregroundColor: Colors.black,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            5.0,
-                                          ), // Adjust the radius as needed
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        await context.pushNamed(
-                                          'reorder',
-                                          pathParameters: {'tabName': tab},
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              ListView.builder(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: items.length,
-                                itemBuilder: (context, index) {
-                                  return WatchlistItem(stock: items[index]);
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
+                      return WatchlistTabContent(
+                        tabName: tab,
+                        items: state.data[tab] ?? [],
                       );
                     }).toList(),
                   ),
@@ -149,6 +92,80 @@ class WatchlistContent extends StatelessWidget {
         }
         return const SizedBox.shrink();
       },
+    );
+  }
+}
+
+class WatchlistTabContent extends StatelessWidget {
+  final String tabName;
+  final List<WatcherModel> items;
+
+  const WatchlistTabContent({
+    super.key,
+    required this.tabName,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return const Center(child: Text('No stocks found'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<HomeScreenBloc>().add(HomeScreenRequested());
+      },
+      child: CustomScrollView(
+        key: PageStorageKey<String>(tabName),
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                children: [
+                  ElevatedButton.icon(
+                    icon: const Icon(
+                      SortSliderIcon.settings_sliders,
+                      color: Colors.black,
+                    ),
+                    label: const Text(
+                      'Sort by',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade300,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await context.pushNamed(
+                        'reorder',
+                        pathParameters: {'tabName': tabName},
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 8),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return WatchlistItem(stock: items[index]);
+                },
+                childCount: items.length,
+                addAutomaticKeepAlives: true,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

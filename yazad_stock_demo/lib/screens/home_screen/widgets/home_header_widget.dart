@@ -13,14 +13,14 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
   @override
   Widget build(BuildContext context) {
     return  IntrinsicHeight(
-        child: Row(
-          mainAxisAlignment: .start,
-          crossAxisAlignment: .center,
-          mainAxisSize: .min,
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Row(
+            mainAxisAlignment: .start,
+            crossAxisAlignment: .center,
+            mainAxisSize: .min,
+            children: [
+              Expanded(
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -35,7 +35,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                             mainAxisAlignment: .start,
                             crossAxisAlignment: .start,
                             mainAxisSize: .min,
-                            spacing: 10,
+                            spacing: 5,
                             children: [
                               Row(
                                 mainAxisAlignment: .start,
@@ -86,21 +86,17 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                   ),
                 ),
               ),
-            ),
-            // CHANGE THIS PART:
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5.0),
-              child: const VerticalDivider(
-                color: Colors.grey,
-                thickness: 2,
-                width: 10, // The total width the divider widget occupies
-                indent: 3, // Empty space at the top
-                endIndent: 3, // Empty space at the bottom
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                child: const VerticalDivider(
+                  color: Colors.grey,
+                  thickness: 2,
+                  width: 10, // The total width the divider widget occupies
+                  indent: 3, // Empty space at the top
+                  endIndent: 3, // Empty space at the bottom
+                ),
               ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(5.0),
+              Expanded(
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -115,7 +111,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                             mainAxisAlignment: .start,
                             crossAxisAlignment: .start,
                             mainAxisSize: .min,
-                            spacing: 10,
+                            spacing: 5,
                             children: [
                               Row(
                                 mainAxisAlignment: .start,
@@ -173,8 +169,8 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       
     );

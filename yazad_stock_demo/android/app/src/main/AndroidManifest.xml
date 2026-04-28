@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.yazad_stock_demo">
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="yazad_stock_demo"
         android:enableOnBackInvokedCallback="true"
